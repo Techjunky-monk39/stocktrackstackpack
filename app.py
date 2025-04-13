@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 import stock_analysis
 import ai_insights
 import utils
+import auth
+import user_data
+import database as db
 
 # Set page config
 st.set_page_config(
@@ -12,6 +15,9 @@ st.set_page_config(
     page_icon="📈",
     layout="wide"
 )
+
+# Show login form in sidebar
+auth.login_form()
 
 # Header
 st.title("📊 StockSense: AI-Powered Financial Analysis")
@@ -53,6 +59,27 @@ if "is_loading_data" not in st.session_state:
     st.session_state.is_loading_data = False
 if "is_loading_insights" not in st.session_state:
     st.session_state.is_loading_insights = False
+if "is_favorite" not in st.session_state:
+    st.session_state.is_favorite = False
+
+# Define callback for favorite stock selection
+def select_favorite_stock(ticker):
+    """Handle favorite stock selection"""
+    st.session_state.ticker = ticker
+    update_data(ticker)
+    st.rerun()
+
+# Define callback for recent search selection
+def select_recent_search(ticker):
+    """Handle recent search selection"""
+    st.session_state.ticker = ticker
+    update_data(ticker)
+    st.rerun()
+
+# Render sidebar components if user is logged in
+if st.session_state.get("is_logged_in", False):
+    user_data.render_favorites_section(on_select_favorite=select_favorite_stock)
+    user_data.render_recent_searches(on_select_search=select_recent_search)
 
 # Stock symbol input
 col1, col2 = st.columns([3, 1])
@@ -95,6 +122,15 @@ def update_data(ticker):
             st.session_state.history = stock_data
             st.session_state.last_update_time = datetime.now()
             st.session_state.error = None
+            
+            # Record the search in database if user is logged in
+            if st.session_state.get("is_logged_in", False):
+                user_data.record_search(ticker)
+                
+                # Check if stock is in favorites
+                user_id = auth.logged_in_user()
+                favorites = db.get_favorite_stocks(user_id)
+                st.session_state.is_favorite = any(fav.ticker == ticker for fav in favorites)
         else:
             st.session_state.error = f"Invalid stock symbol: {ticker}"
     except Exception as e:
@@ -156,7 +192,7 @@ if st.session_state.data is not None and st.session_state.history is not None:
         change_symbol = ""
     
     # Display the current price and change
-    price_col, change_col, placeholder_col = st.columns([1, 1, 2])
+    price_col, change_col, fav_col = st.columns([1, 1, 1])
     with price_col:
         st.metric(
             label=f"{st.session_state.ticker} Current Price",
@@ -170,6 +206,22 @@ if st.session_state.data is not None and st.session_state.history is not None:
                 value=f"${price_change:.2f}",
                 delta=f"{price_change_pct:.2f}%"
             )
+    
+    # Add to favorites button if user is logged in
+    with fav_col:
+        if st.session_state.get("is_logged_in", False):
+            if st.session_state.is_favorite:
+                if st.button("❤️ Remove from Favorites"):
+                    user_data.toggle_favorite_current_stock(st.session_state.ticker)
+                    st.session_state.is_favorite = False
+                    st.rerun()
+            else:
+                if st.button("🤍 Add to Favorites"):
+                    user_data.toggle_favorite_current_stock(st.session_state.ticker)
+                    st.session_state.is_favorite = True
+                    st.rerun()
+        else:
+            st.info("Login to add favorites")
     
     # Display tabs for different sections
     tab1, tab2, tab3 = st.tabs(["📈 Price Chart", "📊 Financial Data", "🤖 AI Insights"])
