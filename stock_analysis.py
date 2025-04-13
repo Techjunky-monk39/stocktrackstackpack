@@ -72,14 +72,14 @@ def create_stock_chart(history, ticker, days=None):
     """
     # Filter data if days is specified
     if days is not None:
-        # Get the start date for filtering
-        start_date = datetime.now() - timedelta(days=days)
+        # Get the start date for filtering and make it timezone-aware
+        from pandas import Timestamp
+        start_date = Timestamp(datetime.now() - timedelta(days=days))
         
-        # Handle timezone-aware datetime index by converting to the same timezone format
+        # Convert both to UTC for comparison
         if history.index.tzinfo is not None:
-            # Convert start_date to UTC or make it timezone-aware to match the dataframe's timezone
-            from pandas import Timestamp
-            start_date = Timestamp(start_date).tz_localize('UTC').tz_convert(history.index.tzinfo)
+            start_date = start_date.tz_localize('UTC')
+            history.index = history.index.tz_convert('UTC')
         
         # Now filter the data
         history = history[history.index >= start_date]
