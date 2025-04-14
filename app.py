@@ -62,6 +62,36 @@ if "is_loading_insights" not in st.session_state:
 if "is_favorite" not in st.session_state:
     st.session_state.is_favorite = False
 
+# Function to fetch and update data
+def update_data(ticker):
+    st.session_state.ticker = ticker.upper()
+    st.session_state.is_loading_data = True
+    
+    try:
+        # Fetch stock data
+        stock_info, stock_data = stock_analysis.get_stock_data(ticker)
+        
+        if stock_info and stock_data is not None:
+            st.session_state.data = stock_info
+            st.session_state.history = stock_data
+            st.session_state.last_update_time = datetime.now()
+            st.session_state.error = None
+            
+            # Record the search in database if user is logged in
+            if st.session_state.get("is_logged_in", False):
+                user_data.record_search(ticker)
+                
+                # Check if stock is in favorites
+                user_id = auth.logged_in_user()
+                favorites = db.get_favorite_stocks(user_id)
+                st.session_state.is_favorite = any(fav.ticker == ticker for fav in favorites)
+        else:
+            st.session_state.error = f"Invalid stock symbol: {ticker}"
+    except Exception as e:
+        st.session_state.error = f"Error fetching data: {str(e)}"
+    
+    st.session_state.is_loading_data = False
+
 # Define callback for favorite stock selection
 def select_favorite_stock(ticker):
     """Handle favorite stock selection"""
