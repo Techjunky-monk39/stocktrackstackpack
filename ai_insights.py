@@ -1,24 +1,13 @@
+
 import os
 import requests
+from openai import OpenAI
 
 def get_codegpt_response(prompt, api_url):
-    """
-    Get response from CodeGPT agent.
-
-    Args:
-        prompt (str): The prompt to send to the agent
-        api_url (str): The CodeGPT agent API URL
-    """
+    """Get response from CodeGPT agent."""
     if not api_url:
         return "Error: CodeGPT API URL not configured"
-        
-    # Test connection
-    try:
-        test_response = requests.get(api_url)
-        if test_response.status_code != 200:
-            return f"Error connecting to CodeGPT API: Status {test_response.status_code}"
-    except Exception as e:
-        return f"Error testing API connection: {str(e)}"
+    
     try:
         headers = {
             'X-API-Key': 'sk-c2b77e4d-d6a5-4469-90b1-d382a9c1389a',
@@ -32,17 +21,33 @@ def get_codegpt_response(prompt, api_url):
     except Exception as e:
         return f"Error connecting to CodeGPT agent: {str(e)}"
 
-def chat_about_stock(ticker, stock_data, user_message):
+def get_openai_response(prompt):
+    """Get response from OpenAI."""
+    try:
+        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a knowledgeable financial analyst assistant. Provide concise, accurate responses about stocks and markets."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error connecting to OpenAI: {str(e)}"
+
+def chat_about_stock(ticker, stock_data, user_message, ai_provider="codegpt"):
     """
-    Chat about the stock based on user input using CodeGPT agent.
+    Chat about the stock based on user input using specified AI provider.
+    
+    Args:
+        ticker: Stock symbol
+        stock_data: Stock information
+        user_message: User's question
+        ai_provider: Either "codegpt" or "openai"
     """
     try:
-        # Get CodeGPT API URL from environment
-        api_url = os.environ.get("CODEGPT_API_URL")
-        if not api_url:
-            return "Error: CODEGPT_API_URL not set in environment variables"
-
-        # Create context about the stock
         stock_context = f"""
         Stock: {ticker} ({stock_data.get('longName', 'N/A')})
         Current Price: ${stock_data.get('currentPrice', 'N/A')}
@@ -51,12 +56,14 @@ def chat_about_stock(ticker, stock_data, user_message):
         Industry: {stock_data.get('industry', 'N/A')}
         Sector: {stock_data.get('sector', 'N/A')}
         """
-
-        # Prepare message for the agent
+        
         prompt = f"Context about the stock:\n{stock_context}\n\nUser question: {user_message}"
-
-        # Get response from CodeGPT agent
-        return get_codegpt_response(prompt, api_url)
+        
+        if ai_provider == "openai":
+            return get_openai_response(prompt)
+        else:
+            api_url = os.environ.get("CODEGPT_API_URL")
+            return get_codegpt_response(prompt, api_url)
 
     except Exception as e:
         return f"Error chatting with AI: {str(e)}"

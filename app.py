@@ -361,6 +361,13 @@ if st.session_state.data is not None and st.session_state.history is not None:
             with st.chat_message(message["role"]):
                 st.write(message["content"])
         
+        # AI provider selection
+        ai_provider = st.selectbox(
+            "Choose AI Provider",
+            ["codegpt", "openai"],
+            key="ai_provider"
+        )
+
         # Chat input
         user_message = st.chat_input("Ask about this stock, compare with others, or get investment advice...")
         
@@ -375,7 +382,8 @@ if st.session_state.data is not None and st.session_state.history is not None:
                     response = ai_insights.chat_about_stock(
                         st.session_state.ticker,
                         st.session_state.data,
-                        user_message
+                        user_message,
+                        st.session_state.ai_provider
                     )
                     st.write(response)
             
