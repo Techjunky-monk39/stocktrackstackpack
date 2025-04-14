@@ -66,21 +66,21 @@ if "is_favorite" not in st.session_state:
 def update_data(ticker):
     st.session_state.ticker = ticker.upper()
     st.session_state.is_loading_data = True
-    
+
     try:
         # Fetch stock data
         stock_info, stock_data = stock_analysis.get_stock_data(ticker)
-        
+
         if stock_info and stock_data is not None:
             st.session_state.data = stock_info
             st.session_state.history = stock_data
             st.session_state.last_update_time = datetime.now()
             st.session_state.error = None
-            
+
             # Record the search in database if user is logged in
             if st.session_state.get("is_logged_in", False):
                 user_data.record_search(ticker)
-                
+
                 # Check if stock is in favorites
                 user_id = auth.logged_in_user()
                 favorites = db.get_favorite_stocks(user_id)
@@ -89,7 +89,7 @@ def update_data(ticker):
             st.session_state.error = f"Invalid stock symbol: {ticker}"
     except Exception as e:
         st.session_state.error = f"Error fetching data: {str(e)}"
-    
+
     st.session_state.is_loading_data = False
 
 # Define callback for favorite stock selection
@@ -115,7 +115,7 @@ if st.session_state.get("is_logged_in", False):
 col1, col2 = st.columns([3, 1])
 with col1:
     ticker_input = st.text_input(
-        "Enter Stock Symbol (e.g., AAPL, MSFT, GOOGL)",
+        "Enter Stock/Crypto Symbol (e.g., AAPL, MSFT, BTC-USD)",
         value=st.session_state.ticker,
         key="ticker_input"
     )
@@ -142,21 +142,21 @@ with refresh_col2:
 def update_data(ticker):
     st.session_state.ticker = ticker.upper()
     st.session_state.is_loading_data = True
-    
+
     try:
         # Fetch stock data
         stock_info, stock_data = stock_analysis.get_stock_data(ticker)
-        
+
         if stock_info and stock_data is not None:
             st.session_state.data = stock_info
             st.session_state.history = stock_data
             st.session_state.last_update_time = datetime.now()
             st.session_state.error = None
-            
+
             # Record the search in database if user is logged in
             if st.session_state.get("is_logged_in", False):
                 user_data.record_search(ticker)
-                
+
                 # Check if stock is in favorites
                 user_id = auth.logged_in_user()
                 favorites = db.get_favorite_stocks(user_id)
@@ -165,20 +165,20 @@ def update_data(ticker):
             st.session_state.error = f"Invalid stock symbol: {ticker}"
     except Exception as e:
         st.session_state.error = f"Error fetching data: {str(e)}"
-    
+
     st.session_state.is_loading_data = False
 
 # Function to get AI insights
 def get_ai_insights(ticker, stock_data):
     st.session_state.is_loading_insights = True
-    
+
     try:
         # Get AI insights
         insights = ai_insights.generate_stock_insights(ticker, stock_data)
         st.session_state.ai_insights = insights
     except Exception as e:
         st.session_state.ai_insights = f"Error generating AI insights: {str(e)}"
-    
+
     st.session_state.is_loading_insights = False
 
 # Process the submitted stock symbol
@@ -209,11 +209,11 @@ if st.session_state.data is not None and st.session_state.history is not None:
     # Display last update time
     if st.session_state.last_update_time:
         st.caption(f"Last updated: {st.session_state.last_update_time.strftime('%Y-%m-%d %H:%M:%S')}")
-    
+
     # Current price and basic info
     current_price = st.session_state.data.get('currentPrice', 'N/A')
     prev_close = st.session_state.data.get('previousClose', 'N/A')
-    
+
     if current_price != 'N/A' and prev_close != 'N/A':
         price_change = current_price - prev_close
         price_change_pct = (price_change / prev_close) * 100
@@ -224,7 +224,7 @@ if st.session_state.data is not None and st.session_state.history is not None:
         price_change_pct = 'N/A'
         price_color = "black"
         change_symbol = ""
-    
+
     # Display the current price and change
     price_col, change_col, fav_col = st.columns([1, 1, 1])
     with price_col:
@@ -232,7 +232,7 @@ if st.session_state.data is not None and st.session_state.history is not None:
             label=f"{st.session_state.ticker} Current Price",
             value=f"${current_price:.2f}" if isinstance(current_price, (int, float)) else current_price
         )
-    
+
     with change_col:
         if isinstance(price_change, (int, float)) and isinstance(price_change_pct, (int, float)):
             st.metric(
@@ -240,7 +240,7 @@ if st.session_state.data is not None and st.session_state.history is not None:
                 value=f"${price_change:.2f}",
                 delta=f"{price_change_pct:.2f}%"
             )
-    
+
     # Add to favorites button if user is logged in
     with fav_col:
         if st.session_state.get("is_logged_in", False):
@@ -256,13 +256,13 @@ if st.session_state.data is not None and st.session_state.history is not None:
                     st.rerun()
         else:
             st.info("Login to add favorites")
-    
+
     # Display tabs for different sections
     tab1, tab2, tab3 = st.tabs(["📈 Price Chart", "📊 Financial Data", "🤖 AI Insights"])
-    
+
     with tab1:
         st.subheader(f"{st.session_state.ticker} Stock Price History")
-        
+
         # Time period selector
         time_periods = {
             "1M": 30,
@@ -272,13 +272,13 @@ if st.session_state.data is not None and st.session_state.history is not None:
             "5Y": 1825,
             "Max": None
         }
-        
+
         selected_period = st.select_slider(
             "Select Time Period",
             options=list(time_periods.keys()),
             value="6M"
         )
-        
+
         # Create and display interactive chart
         fig = stock_analysis.create_stock_chart(
             st.session_state.history, 
@@ -286,19 +286,19 @@ if st.session_state.data is not None and st.session_state.history is not None:
             days=time_periods[selected_period]
         )
         st.plotly_chart(fig, use_container_width=True)
-    
+
     with tab2:
         st.subheader("Key Financial Data")
-        
+
         # Format and display key financial metrics
         financial_data = utils.format_financial_data(st.session_state.data)
-        
+
         # Split into columns for better display
         col1, col2, col3 = st.columns(3)
-        
+
         metrics = list(financial_data.items())
         metrics_per_col = len(metrics) // 3 + (1 if len(metrics) % 3 > 0 else 0)
-        
+
         for i, (label, value) in enumerate(metrics):
             col_idx = i // metrics_per_col
             if col_idx == 0:
@@ -310,18 +310,18 @@ if st.session_state.data is not None and st.session_state.history is not None:
             else:
                 with col3:
                     st.metric(label, value)
-        
+
         # Create a table of the data for download
         st.subheader("Detailed Financial Data")
-        
+
         # Convert to dataframe for display
         df_data = pd.DataFrame({
             "Metric": list(financial_data.keys()),
             "Value": list(financial_data.values())
         })
-        
+
         st.dataframe(df_data, use_container_width=True)
-        
+
         # Download button for CSV
         csv = utils.convert_df_to_csv(df_data)
         st.download_button(
@@ -330,20 +330,20 @@ if st.session_state.data is not None and st.session_state.history is not None:
             file_name=f"{st.session_state.ticker}_financial_data.csv",
             mime="text/csv",
         )
-        
+
         # Historical data table (recent)
         st.subheader("Recent Price History")
         recent_history = st.session_state.history.tail(10).reset_index()
         # Ensure we only select the columns we want to display
         recent_history = recent_history[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']]
-        
+
         # Format the dataframe
         recent_history['Date'] = recent_history['Date'].dt.strftime('%Y-%m-%d')
         for col in ['Open', 'High', 'Low', 'Close']:
             recent_history[col] = recent_history[col].round(2)
-        
+
         st.dataframe(recent_history, use_container_width=True)
-        
+
         # Download button for historical data CSV
         hist_csv = utils.convert_df_to_csv(recent_history)
         st.download_button(
@@ -352,19 +352,19 @@ if st.session_state.data is not None and st.session_state.history is not None:
             file_name=f"{st.session_state.ticker}_historical_data.csv",
             mime="text/csv",
         )
-    
+
     with tab3:
         st.subheader("Chat with AI about " + st.session_state.ticker)
-        
+
         # Initialize chat history if not exists
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
-        
+
         # Display chat history
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.write(message["content"])
-        
+
         # AI provider selection
         ai_provider = st.selectbox(
             "Choose AI Provider",
@@ -374,12 +374,12 @@ if st.session_state.data is not None and st.session_state.history is not None:
 
         # Chat input
         user_message = st.chat_input("Ask about this stock, compare with others, or get investment advice...")
-        
+
         if user_message:
             # Display user message
             with st.chat_message("user"):
                 st.write(user_message)
-            
+
             # Get AI response
             with st.chat_message("assistant"):
                 with st.spinner("Thinking..."):
@@ -390,7 +390,7 @@ if st.session_state.data is not None and st.session_state.history is not None:
                         st.session_state.ai_provider
                     )
                     st.write(response)
-            
+
             # Store in chat history
             st.session_state.chat_history.append({"role": "user", "content": user_message})
             st.session_state.chat_history.append({"role": "assistant", "content": response})
