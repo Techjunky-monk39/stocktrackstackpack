@@ -98,29 +98,31 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Dependency to get DB session
 def get_db():
     """Get database session"""
-    db = SessionLocal()
-    try:
-        return db
-    finally:
-        db.close()
+    return SessionLocal()
 
 # Streamlit session state management for database
 def get_or_create_user(username):
     """Get or create a user with the given username"""
     db = get_db()
-    user = db.query(User).filter(User.username == username).first()
-    
-    if not user:
-        user = User(username=username, last_login=datetime.utcnow())
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    else:
-        # Update last login time
-        user.last_login = datetime.utcnow()
-        db.commit()
+    try:
+        user = db.query(User).filter(User.username == username).first()
         
-    return user
+        if not user:
+            user = User(username=username, last_login=datetime.utcnow())
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        else:
+            # Update last login time
+            user.last_login = datetime.utcnow()
+            db.commit()
+            
+        # Get a fresh instance with all attributes loaded
+        user_id = user.id
+        return db.query(User).get(user_id)
+    except Exception as e:
+        db.rollback()
+        raise e
 
 
 def add_search_history(user_id, ticker):
