@@ -10,7 +10,11 @@ def get_codegpt_response(prompt, api_url):
         api_url (str): The CodeGPT agent API URL
     """
     try:
-        response = requests.post(api_url, json={"prompt": prompt})
+        headers = {
+            'X-API-Key': 'sk-c2b77e4d-d6a5-4469-90b1-d382a9c1389a',
+            'User-Agent': 'bc1d_vs'
+        }
+        response = requests.post(api_url, json={"prompt": prompt}, headers=headers)
         if response.status_code == 200:
             return response.json().get('response', '')
         else:
