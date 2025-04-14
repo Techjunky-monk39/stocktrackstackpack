@@ -9,6 +9,16 @@ def get_codegpt_response(prompt, api_url):
         prompt (str): The prompt to send to the agent
         api_url (str): The CodeGPT agent API URL
     """
+    if not api_url:
+        return "Error: CodeGPT API URL not configured"
+        
+    # Test connection
+    try:
+        test_response = requests.get(api_url)
+        if test_response.status_code != 200:
+            return f"Error connecting to CodeGPT API: Status {test_response.status_code}"
+    except Exception as e:
+        return f"Error testing API connection: {str(e)}"
     try:
         headers = {
             'X-API-Key': 'sk-c2b77e4d-d6a5-4469-90b1-d382a9c1389a',
