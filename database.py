@@ -8,8 +8,15 @@ from datetime import datetime
 # Get database URL from environment variables
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Create SQLAlchemy engine
-engine = create_engine(DATABASE_URL)
+# Create SQLAlchemy engine with connection pool and retry settings
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=300,  # Recycle connections every 5 minutes
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30
+)
 
 # Create declarative base
 Base = declarative_base()
