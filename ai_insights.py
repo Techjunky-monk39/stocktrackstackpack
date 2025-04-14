@@ -32,7 +32,7 @@ def get_openai_response(prompt):
     try:
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a knowledgeable financial analyst assistant. Provide concise, accurate responses about stocks and markets."},
                 {"role": "user", "content": prompt}
