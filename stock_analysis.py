@@ -16,10 +16,12 @@ def get_stock_data(ticker):
     """
     try:
         # Create ticker object
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker.replace('"', ''))  # Remove any quotes
         
         # Get stock info
-        info = stock.info
+        info = stock.info if stock else {}
+        if not info:
+            raise Exception(f"Could not fetch data for {ticker}")
         
         # Get historical data
         history = stock.history(period="5y")

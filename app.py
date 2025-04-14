@@ -202,7 +202,7 @@ if st.session_state.auto_refresh and st.session_state.ticker:
 if st.session_state.error:
     st.error(st.session_state.error)
     # Display a random stock image when there's an error
-    st.image(utils.get_random_image(stock_images), use_column_width=True)
+    st.image(utils.get_random_image(stock_images), use_container_width=True)
 
 # If we have data to show
 if st.session_state.data is not None and st.session_state.history is not None:
