@@ -11,13 +11,19 @@ def get_codegpt_response(prompt, api_url):
     try:
         headers = {
             'X-API-Key': 'sk-c2b77e4d-d6a5-4469-90b1-d382a9c1389a',
-            'User-Agent': 'bc1d_vs'
+            'User-Agent': 'bc1d_vs',
+            'Content-Type': 'application/json'
         }
         response = requests.post(api_url, json={"prompt": prompt}, headers=headers)
-        if response.status_code == 200:
+        response.raise_for_status()  # Raise exception for bad status codes
+        
+        try:
             return response.json().get('response', '')
-        else:
-            return f"Error: {response.status_code} - {response.text}"
+        except ValueError:
+            return "Error: Invalid JSON response from CodeGPT API"
+        
+    except requests.exceptions.RequestException as e:
+        return f"Error connecting to CodeGPT API: {str(e)}"
     except Exception as e:
         return f"Error connecting to CodeGPT agent: {str(e)}"
 
