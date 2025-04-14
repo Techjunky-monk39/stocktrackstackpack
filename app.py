@@ -350,26 +350,38 @@ if st.session_state.data is not None and st.session_state.history is not None:
         )
     
     with tab3:
-        st.subheader("AI-Powered Financial Insights")
+        st.subheader("Chat with AI about " + st.session_state.ticker)
         
-        # AI analysis section
-        if st.session_state.ai_insights is None:
-            if st.button("Generate AI Insights"):
-                get_ai_insights(st.session_state.ticker, st.session_state.data)
-                st.rerun()
+        # Initialize chat history if not exists
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+        
+        # Display chat history
+        for message in st.session_state.chat_history:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+        
+        # Chat input
+        user_message = st.chat_input("Ask about this stock, compare with others, or get investment advice...")
+        
+        if user_message:
+            # Display user message
+            with st.chat_message("user"):
+                st.write(user_message)
             
-            if st.session_state.is_loading_insights:
-                st.info("Generating AI insights... This may take a moment.")
-        else:
-            # Display AI insights
-            if isinstance(st.session_state.ai_insights, str) and st.session_state.ai_insights.startswith("Error"):
-                st.error(st.session_state.ai_insights)
-            else:
-                st.write(st.session_state.ai_insights)
-                
-                if st.button("Refresh AI Insights"):
-                    get_ai_insights(st.session_state.ticker, st.session_state.data)
-                    st.rerun()
+            # Get AI response
+            with st.chat_message("assistant"):
+                with st.spinner("Thinking..."):
+                    response = ai_insights.chat_about_stock(
+                        st.session_state.ticker,
+                        st.session_state.data,
+                        user_message
+                    )
+                    st.write(response)
+            
+            # Store in chat history
+            st.session_state.chat_history.append({"role": "user", "content": user_message})
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
 
 # Display disclaimer
 st.markdown("---")
