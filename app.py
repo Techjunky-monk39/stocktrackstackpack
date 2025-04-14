@@ -330,7 +330,8 @@ if st.session_state.data is not None and st.session_state.history is not None:
         # Historical data table (recent)
         st.subheader("Recent Price History")
         recent_history = st.session_state.history.tail(10).reset_index()
-        recent_history.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+        # Ensure we only select the columns we want to display
+        recent_history = recent_history[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']]
         
         # Format the dataframe
         recent_history['Date'] = recent_history['Date'].dt.strftime('%Y-%m-%d')
