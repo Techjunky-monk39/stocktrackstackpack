@@ -15,13 +15,14 @@ def get_stock_data(ticker):
         tuple: (stock_info, stock_history)
     """
     try:
-        # Create ticker object
-        stock = yf.Ticker(ticker.replace('"', ''))  # Remove any quotes
+        # Create ticker object and clean the ticker symbol
+        clean_ticker = ticker.replace('"', '').strip()
+        stock = yf.Ticker(clean_ticker)
         
         # Get stock info
-        info = stock.info if stock else {}
-        if not info:
-            raise Exception(f"Could not fetch data for {ticker}")
+        info = stock.info
+        if not info or len(info) == 0:
+            raise Exception(f"Could not fetch data for {clean_ticker}")
         
         # Get historical data
         history = stock.history(period="5y")
