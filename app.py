@@ -182,10 +182,14 @@ def get_ai_insights(ticker, stock_data):
     st.session_state.is_loading_insights = False
 
 # Process the submitted stock symbol
-if submit_button and ticker_input:
-    update_data(ticker_input)
-    # Clear any previous AI insights when a new stock is requested
-    st.session_state.ai_insights = None
+if submit_button:
+    if ticker_input:
+        update_data(ticker_input.strip().upper())
+        # Clear any previous AI insights when a new stock is requested
+        st.session_state.ai_insights = None
+        st.rerun()
+    else:
+        st.error("Please enter a stock symbol")
 
 # Auto-refresh logic
 if st.session_state.auto_refresh and st.session_state.ticker:
