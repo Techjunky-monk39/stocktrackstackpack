@@ -1,4 +1,4 @@
-import os
+from dotenv import load_dotenv
 import os
 import streamlit as st
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, ForeignKey
@@ -6,10 +6,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 
+# Load environment variables from .env file
+load_dotenv()
+
 # Get database URL from environment variables
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Check if DATABASE_URL is set
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set. Please configure it before running the application.")
 

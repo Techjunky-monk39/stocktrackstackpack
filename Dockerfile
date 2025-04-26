@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y \
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the .env file into the container
+COPY .env /app/.env
+
 # Expose the port Streamlit will run on
 EXPOSE 5000
 
