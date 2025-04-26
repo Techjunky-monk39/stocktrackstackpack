@@ -8,6 +8,10 @@ from datetime import datetime
 # Get database URL from environment variables
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# Check if DATABASE_URL is set
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set. Please configure it before running the application.")
+
 # Create SQLAlchemy engine with connection pool and retry settings
 engine = create_engine(
     DATABASE_URL,

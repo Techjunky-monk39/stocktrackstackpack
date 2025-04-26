@@ -402,3 +402,8 @@ st.caption("""
 Market data may be delayed. The AI-powered insights are generated using algorithms and should not be considered as financial advice. 
 Always conduct your own research before making investment decisions.
 """)
+
+# Ensure Streamlit runs on 0.0.0.0 and port 5000
+if __name__ == "__main__":
+    import os
+    os.system("streamlit run app.py --server.port=5000 --server.address=0.0.0.0")
