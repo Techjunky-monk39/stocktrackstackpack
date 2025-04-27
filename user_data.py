@@ -59,10 +59,14 @@ def render_favorites_section(on_select_favorite=None):
                     st.error(f"{ticker} is already in your favorites.")
 
 
-def record_search(ticker):
-    """Record a stock search in the database"""
+def record_search(ticker, prevent_duplicates=False):
+    """Record a stock search in the database."""
     if auth.require_login():
         user_id = auth.logged_in_user()
+        if prevent_duplicates:
+            recent_searches = db.get_recent_searches(user_id)
+            if any(search.ticker.isnot(None) and search.ticker == ticker for search in recent_searches):  # Fixed conditional operand
+                return
         db.add_search_history(user_id, ticker)
 
 

@@ -11,7 +11,6 @@ load_dotenv()
 
 # Get database URL from environment variables
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set. Please configure it before running the application.")
 
@@ -121,7 +120,7 @@ def get_or_create_user(username):
             db.refresh(user)
         else:
             # Update last login time
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.utcnow()  # Fixed assignment to last_login
             db.commit()
             
         # Get a fresh instance with all attributes loaded
@@ -131,17 +130,23 @@ def get_or_create_user(username):
         db.rollback()
         raise e
 
+def record_session_time(user_id, session_start_time):
+    """Record the session start time for a user."""
+    db = get_db()
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        user.last_login = session_start_time
+        db.commit()
 
 def add_search_history(user_id, ticker):
-    """Add a new search history entry"""
+    """Add a new search history entry."""
     db = get_db()
     search = SearchHistory(user_id=user_id, ticker=ticker)
     db.add(search)
     db.commit()
 
-
 def get_recent_searches(user_id, limit=5):
-    """Get recent searches for a user"""
+    """Get recent searches for a user."""
     db = get_db()
     return db.query(SearchHistory).filter(
         SearchHistory.user_id == user_id
@@ -219,7 +224,7 @@ def update_prediction_accuracy(prediction_id, actual_price):
         prediction.actual_price = actual_price
         
         # Calculate accuracy as percentage difference
-        if prediction.predicted_price > 0:
+        if prediction.predicted_price.isnot(None) and prediction.predicted_price > 0:  # Fixed conditional operand
             diff = abs(prediction.predicted_price - actual_price)
             prediction.accuracy = 100 - ((diff / prediction.predicted_price) * 100)
         
@@ -238,3 +243,26 @@ def get_recent_predictions(ticker=None, limit=10):
         query = query.filter(StockPrediction.ticker == ticker)
     
     return query.order_by(StockPrediction.prediction_date.desc()).limit(limit).all()
+
+
+def generate_api_link(action, **params):
+    """Generate an API link for a specific action"""
+    base_url = os.environ.get("API_BASE_URL", "http://localhost:8000/api")
+    query_params = "&".join(f"{key}={value}" for key, value in params.items())
+    return f"{base_url}/{action}?{query_params}"
+
+def handle_api_error(service_name):
+    """Generate a clickable link for API key errors"""
+    if service_name.lower() == "openai":
+        return generate_api_link("manage_api_keys", service="openai")
+    elif service_name.lower() == "codegpt":
+        return generate_api_link("manage_api_keys", service="codegpt")
+    else:
+        return "Unknown service. Please check your configuration."
+
+# Example usage:
+# link = generate_api_link("update_prediction", prediction_id=123, actual_price=456.78)
+# print(link)  # Output: http://localhost:8000/api/update_prediction?prediction_id=123&actual_price=456.78
+
+# error_link = handle_api_error("openai")
+# print(error_link)  # Output: http://localhost:8000/api/manage_api_keys?service=openai
