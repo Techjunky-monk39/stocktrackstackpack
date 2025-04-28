@@ -53,6 +53,33 @@ streamlit run app.py
 - `stock_analysis.py`: Stock analysis tools.
 - `user_data.py`: User data management.
 - `utils.py`: Utility functions.
+- `.streamlit/config.toml`: Streamlit configuration.
+- `requirements.txt`: Python dependencies.
+- `Dockerfile`: Docker configuration.
+- `pyproject.toml`: Project metadata and dependencies.
+
+## Troubleshooting
+
+If you encounter issues, follow these steps:
+
+1. **Check Logs**:
+   - Application errors: Refer to `app_errors.log`.
+   - Database errors: Refer to `db_errors.log`.
+
+2. **Verify Dependencies**:
+   Ensure all dependencies in `requirements.txt` are installed:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Validate Database Connection**:
+   Test the database connection using `test_db_connection.py`:
+   ```bash
+   python test_db_connection.py
+   ```
+
+4. **Contact Support**:
+   If the issue persists, please submit an issue with detailed logs.
 
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request.

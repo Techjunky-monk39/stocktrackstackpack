@@ -1,6 +1,7 @@
 {
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticSeverityOverrides": {
-        "reportUndefinedVariable": "error"  // Set to "error", "warning", or "none"
-    }
+        "reportUndefinedVariable": "error"
+    },
+    "git.ignoreLimitWarning": true
 }

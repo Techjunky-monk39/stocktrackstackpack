@@ -1,4 +1,6 @@
 {
     "typeCheckingMode": "basic",
-    "reportUndefinedVariable": "error"  // Set to "error", "warning", or "none"
+    "diagnosticSeverityOverrides": {
+        "reportUndefinedVariable": "error"
+    }
 }

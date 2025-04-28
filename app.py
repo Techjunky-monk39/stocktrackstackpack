@@ -1,5 +1,38 @@
 import streamlit as st
 from urllib.parse import parse_qs
+import logging
+
+# Configure logging to capture errors
+logging.basicConfig(
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    filename="app_errors.log",  # Log errors to a file
+    filemode="a"
+)
+
+# Initialize session state variables
+if "ticker" not in st.session_state:
+    st.session_state.ticker = ""  # Default value for ticker
+if "is_loading_data" not in st.session_state:
+    st.session_state.is_loading_data = False
+if "data" not in st.session_state:
+    st.session_state.data = None
+if "history" not in st.session_state:
+    st.session_state.history = None
+if "last_update_time" not in st.session_state:
+    st.session_state.last_update_time = None
+if "error" not in st.session_state:
+    st.session_state.error = None
+if "is_favorite" not in st.session_state:
+    st.session_state.is_favorite = False
+if "auto_refresh" not in st.session_state:
+    st.session_state.auto_refresh = False
+if "refresh_interval" not in st.session_state:
+    st.session_state.refresh_interval = 60  # Default refresh interval in seconds
+if "ai_insights" not in st.session_state:
+    st.session_state.ai_insights = None
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
 # Handle query parameters for navigation
 query_params = st.query_params  # Updated from st.experimental_get_query_params
@@ -81,10 +114,6 @@ else:
     import auth
     import user_data
     import database as db
-    import logging
-
-    # Configure logging to capture errors and ensure the GUI remains functional
-    logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
     try:
         # Set page config
@@ -403,8 +432,8 @@ else:
             import os
             os.system("streamlit run app.py --server.port=5000 --server.address=0.0.0.0")
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
-        st.error("An unexpected error occurred. Please try again later.")
+        logging.error(f"An unexpected error occurred: {e}", exc_info=True)
+        st.error("An unexpected error occurred. Please check the logs for more details.")
 
 # Define a placeholder list of stock images
 stock_images = ["/workspaces/stocktrackstackpack/attached_assets/image_1744634579171.png"]

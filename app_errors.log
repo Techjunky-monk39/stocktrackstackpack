@@ -1,0 +1,5 @@
+2025-04-27 17:39:48,211 - ERROR - $B: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2025-04-27 17:39:48,292 - ERROR - $B: possibly delisted; no price data found  (period=5y) (Yahoo error = "No data found, symbol may be delisted")
+2025-04-27 17:40:25,077 - ERROR - $QSC: possibly delisted; no price data found  (period=5y)
+2025-04-27 17:40:25,846 - ERROR - $QSC: possibly delisted; no price data found  (period=5y)
+2025-04-27 17:40:27,347 - ERROR - $QSC: possibly delisted; no price data found  (period=5y)
